@@ -14,5 +14,8 @@ config.initial_rows = 28
 config.font_size = 13
 config.color_scheme = 'Everforest Dark (Gogh)'
 
+-- Frameless: no title bar, but the window can still be resized from its edges.
+config.window_decorations = 'RESIZE'
+
 -- Finally, return the configuration to wezterm:
 return config
