@@ -34,6 +34,12 @@ config.keys = {
       end
     end),
   },
+  -- Cmd+Backspace: delete to start of line (Ctrl+U), like macOS text fields.
+  {
+    key = 'Backspace',
+    mods = 'CMD',
+    action = wezterm.action.SendString '\x15',
+  },
 }
 
 -- Finally, return the configuration to wezterm:
