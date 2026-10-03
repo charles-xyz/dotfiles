@@ -17,9 +17,23 @@ config.color_scheme = 'Everforest Dark (Gogh)'
 -- Frameless: no title bar, but the window can still be resized from its edges.
 config.window_decorations = 'RESIZE'
 
--- Toggle fullscreen with Cmd+Enter.
+-- Toggle between normal size and filling the screen (no native fullscreen) with Cmd+Enter.
+local maximized = {}
 config.keys = {
-  { key = 'Enter', mods = 'CMD', action = wezterm.action.ToggleFullScreen },
+  {
+    key = 'Enter',
+    mods = 'CMD',
+    action = wezterm.action_callback(function(window, pane)
+      local id = window:window_id()
+      if maximized[id] then
+        window:restore()
+        maximized[id] = false
+      else
+        window:maximize()
+        maximized[id] = true
+      end
+    end),
+  },
 }
 
 -- Finally, return the configuration to wezterm:
