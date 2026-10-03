@@ -85,6 +85,7 @@ in
     python312
     uv
     bat
+    postgresql
     (lib.hiPrio ghAccountRouter)
   ];
 
