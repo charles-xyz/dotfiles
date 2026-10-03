@@ -86,6 +86,12 @@ in
     uv
     bat
     postgresql
+    # Scala: JDK (macOS /usr/bin/java is only a stub), scala-cli for single
+    # files/scripts, sbt for build.sbt projects, metals as the LSP for nvim.
+    jdk21
+    scala-cli
+    sbt
+    metals
     (lib.hiPrio ghAccountRouter)
   ];
 

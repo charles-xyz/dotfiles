@@ -6,23 +6,45 @@ vim.opt.background = "dark"
 vim.g.mapleader = " "
 vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 
--- PYTHON COMPILE HOTKEY
+-- PYTHON / SCALA COMPILE HOTKEY
 --
    vim.keymap.set("n", "<leader>r", function()
      vim.cmd("write")
 
      local file = vim.fn.expand("%:p")
-     local root = vim.fs.root(file, { "pyproject.toml" }) or vim.fn.getcwd()
+     local root
      local command
 
-     if file:match("/tests/test_.*%.py$") then
-       command = "uv run python -m pytest " .. vim.fn.shellescape(file)
+     if vim.bo.filetype == "scala" or vim.bo.filetype == "sbt" then
+       local sbt_root = vim.fs.root(file, { "build.sbt" })
+       local is_test = file:match("/test/") or file:match("%.test%.scala$")
+
+       if sbt_root then
+         -- sbt project: run the app, or just this suite (class name = file name)
+         root = sbt_root
+         if is_test then
+           local suite = vim.fn.fnamemodify(file, ":t:r")
+           command = "sbt " .. vim.fn.shellescape("testOnly *" .. suite)
+         else
+           command = "sbt run"
+         end
+       else
+         -- no build.sbt: scala-cli compiles and runs the single file
+         root = vim.fs.root(file, { "project.scala" }) or vim.fn.getcwd()
+         command = "scala-cli " .. (is_test and "test " or "run ") .. vim.fn.shellescape(file)
+       end
      else
-       command = "uv run " .. vim.fn.shellescape(file)
+       root = vim.fs.root(file, { "pyproject.toml" }) or vim.fn.getcwd()
+
+       if file:match("/tests/test_.*%.py$") then
+         command = "uv run python -m pytest " .. vim.fn.shellescape(file)
+       else
+         command = "uv run " .. vim.fn.shellescape(file)
+       end
      end
 
      vim.cmd("!cd " .. vim.fn.shellescape(root) .. " && " .. command)
-   end, { desc = "Run current Python file or test" })
+   end, { desc = "Run current Python/Scala file or test" })
 -- === === ===
 
 -- Install lazy.nvim automatically
@@ -100,7 +122,15 @@ require("lazy").setup({
     lazy = false,
     build = ":TSUpdate",
     config = function()
-      require("nvim-treesitter").install({ "markdown", "markdown_inline" })
+      require("nvim-treesitter").install({ "markdown", "markdown_inline", "scala" })
+
+      -- build.sbt has its own filetype but is plain Scala
+      vim.treesitter.language.register("scala", "sbt")
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "scala", "sbt" },
+        -- pcall: the parser is compiled async on first launch
+        callback = function() pcall(vim.treesitter.start) end,
+      })
     end,
   },
   {
@@ -124,6 +154,19 @@ require("lazy").setup({
         },
       })
       vim.lsp.enable("basedpyright")
+
+      -- Metals comes from nix (home.nix), not mason
+      vim.lsp.config("metals", {
+        capabilities = require("blink.cmp").get_lsp_capabilities(),
+        filetypes = { "scala", "sbt" },
+        -- one nested list = equal priority, so the nearest build file wins;
+        -- .bsp/.scala-build appear for scala-cli projects (see `scala-cli setup-ide .`)
+        root_markers = {
+          { "build.sbt", "build.mill", "build.sc", "project.scala", ".scala-build", ".bsp" },
+          ".git",
+        },
+      })
+      vim.lsp.enable("metals")
     end,
   },
 })
