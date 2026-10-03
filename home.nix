@@ -1,13 +1,73 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 let
-  # Git credential helper that authenticates as the sante GitHub account
-  # (added via `gh auth login`) regardless of which account gh has active.
+  # GitHub account (added via `gh auth login`) used for github.com/santehq/*.
+  santeUser = "charleslazaroni-sante";
+
+  # Git credential helper that authenticates as the sante account regardless
+  # of which account gh has active.
   santeGitCredential = pkgs.writeShellScript "git-credential-gh-sante" ''
     [ "$1" = get ] || exit 0
-    token=$(${pkgs.gh}/bin/gh auth token --hostname github.com --user charleslazaroni-sante) || exit 1
-    echo username=charleslazaroni-sante
+    token=$(${pkgs.gh}/bin/gh auth token --hostname github.com --user ${santeUser}) || exit 1
+    echo username=${santeUser}
     echo password=$token
+  '';
+
+  # `gh` wrapper that mirrors the git routing below: a command that targets
+  # github.com/santehq/* (via -R/--repo, GH_REPO, a santehq/... argument, or a
+  # remote of the current repo) runs as the sante account; everything else runs
+  # as gh's active (personal) account. Shadows pkgs.gh's bin/gh via hiPrio.
+  ghAccountRouter = pkgs.writeShellScriptBin "gh" ''
+    gh=${pkgs.gh}/bin/gh
+    git=${pkgs.git}/bin/git
+
+    # Already pinned to an account, or managing accounts: leave gh alone.
+    if [ -n "''${GH_TOKEN-}" ] || [ -n "''${GITHUB_TOKEN-}" ] || [ "''${1-}" = auth ]; then
+      exec "$gh" "$@"
+    fi
+
+    # Whole-argument shapes that point at santehq (repo, URL, or API path).
+    is_sante() {
+      case "$1" in
+        santehq/*|github.com/santehq/*|https://github.com/santehq/*) return 0 ;;
+        git@github.com:santehq/*|ssh://git@github.com/santehq/*) return 0 ;;
+        repos/santehq/*|/repos/santehq/*|orgs/santehq|orgs/santehq/*) return 0 ;;
+        /orgs/santehq|/orgs/santehq/*) return 0 ;;
+      esac
+      return 1
+    }
+
+    # An explicit target (-R/--repo, then GH_REPO) wins over everything else.
+    repo=''${GH_REPO-}
+    prev=
+    for arg in "$@"; do
+      case "$prev" in -R|--repo) repo=$arg ;; esac
+      case "$arg" in --repo=*) repo=''${arg#--repo=} ;; -R?*) repo=''${arg#-R} ;; esac
+      prev=$arg
+    done
+
+    use_sante=
+    if [ -n "$repo" ]; then
+      is_sante "$repo" && use_sante=1
+    else
+      for arg in "$@"; do
+        is_sante "$arg" && use_sante=1
+      done
+      if [ -z "$use_sante" ]; then
+        while read -r _ url; do
+          is_sante "$url" && use_sante=1
+        done < <("$git" config --get-regexp '^remote\..*\.url$' 2>/dev/null)
+      fi
+    fi
+
+    if [ -n "$use_sante" ]; then
+      token=$("$gh" auth token --hostname github.com --user ${santeUser}) || {
+        echo "gh: no token for ${santeUser}; run 'gh auth login' as that account" >&2
+        exit 1
+      }
+      export GH_TOKEN=$token
+    fi
+    exec "$gh" "$@"
   '';
 in
 {
@@ -25,6 +85,7 @@ in
     python312
     uv
     bat
+    (lib.hiPrio ghAccountRouter)
   ];
 
 
