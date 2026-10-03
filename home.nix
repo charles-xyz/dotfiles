@@ -14,7 +14,9 @@
     tree-sitter
     python312
     uv
+    bat
   ];
+
 
   home.file.".wezterm.lua".source = ./config/wezterm/wezterm.lua;
 
