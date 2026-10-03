@@ -1,5 +1,15 @@
 { pkgs, ... }:
 
+let
+  # Git credential helper that authenticates as the sante GitHub account
+  # (added via `gh auth login`) regardless of which account gh has active.
+  santeGitCredential = pkgs.writeShellScript "git-credential-gh-sante" ''
+    [ "$1" = get ] || exit 0
+    token=$(${pkgs.gh}/bin/gh auth token --hostname github.com --user charleslazaroni-sante) || exit 1
+    echo username=charleslazaroni-sante
+    echo password=$token
+  '';
+in
 {
   home.username = "sante";
   home.homeDirectory = "/Users/sante";
@@ -27,10 +37,28 @@
 
   programs.git = {
     enable = true;
-    settings.user = {
-      name = "Charles Lazaroni";
-      email = "charles.lazaroni@santehq.com";
+    settings = {
+      user = {
+        name = "Charles Lazaroni";
+        email = "charleslazaroni@gmail.com";
+      };
+      # github.com/santehq/* uses the sante account; every other GitHub URL
+      # falls through to gh's active (personal) account via programs.gh below.
+      credential."https://github.com/santehq".helper = [ "" "${santeGitCredential}" ];
     };
+
+    # Repos whose remote is under santehq commit as the sante address;
+    # everything else keeps the personal default above.
+    includes = [
+      {
+        condition = "hasconfig:remote.*.url:https://github.com/santehq/**";
+        contents.user.email = "charles.lazaroni@santehq.com";
+      }
+      {
+        condition = "hasconfig:remote.*.url:git@github.com:santehq/**";
+        contents.user.email = "charles.lazaroni@santehq.com";
+      }
+    ];
   };
 
   programs.zsh = {
