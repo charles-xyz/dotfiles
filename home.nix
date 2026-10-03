@@ -12,6 +12,8 @@
     fd
     jq
     tree-sitter
+    python312
+    uv
   ];
 
   home.file.".wezterm.lua".source = ./config/wezterm/wezterm.lua;
@@ -40,6 +42,14 @@
       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
       [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
       export PATH="$HOME/.local/bin:$PATH"
+
+      # macOS path_helper puts /usr/bin first; make Nix-provided tools win
+      export PATH="$HOME/.nix-profile/bin:$PATH"
+
+      # Copy a file to the clipboard as a file (like Cmd+C in Finder)
+      copyfile() {
+        osascript -e "set the clipboard to (POSIX file \"$(realpath "$1")\")"
+      }
     '';
   };
 
