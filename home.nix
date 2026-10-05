@@ -85,6 +85,7 @@ in
     python312
     uv
     bat
+    lazygit
     postgresql
     # Scala: JDK (macOS /usr/bin/java is only a stub), scala-cli for single
     # files/scripts, sbt for build.sbt projects, metals as the LSP for nvim.
