@@ -4,6 +4,7 @@ vim.g.loaded_netrwPlugin = 1
 vim.opt.clipboard = "unnamedplus"
 vim.opt.termguicolors = true
 vim.opt.background = "dark"
+vim.opt.number = true
 -- HOTKEYS === === ===
 
 vim.g.mapleader = " "
