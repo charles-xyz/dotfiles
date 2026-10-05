@@ -1,3 +1,6 @@
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
 vim.opt.clipboard = "unnamedplus"
 vim.opt.termguicolors = true
 vim.opt.background = "dark"
@@ -5,7 +8,8 @@ vim.opt.background = "dark"
 
 vim.g.mapleader = " "
 vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
-vim.keymap.set("n", "<leader>e", "<cmd>Lexplore<CR>", { desc = "Toggle file explorer" })
+vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeToggle<CR>", { desc = "Toggle file explorer" })
+vim.keymap.set("n", "<leader>f", "<cmd>NvimTreeFindFile<CR>", { desc = "Reveal current file in explorer" })
 
 -- PYTHON / SCALA COMPILE HOTKEY
 --
@@ -64,7 +68,24 @@ end
 
 vim.opt.rtp:prepend(lazypath)
 
+-- Home Manager links the tracked lockfile into the read-only Nix store.
+local lockfile = vim.fn.stdpath("data") .. "/lazy-lock.json"
+if vim.fn.filereadable(lockfile) == 0 then
+  vim.fn.writefile(vim.fn.readfile(vim.fn.stdpath("config") .. "/lazy-lock.json"), lockfile)
+end
+
 require("lazy").setup({
+  {
+    "nvim-tree/nvim-tree.lua",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    cmd = { "NvimTreeToggle", "NvimTreeFindFile" },
+    opts = {
+      view = { width = 32 },
+      renderer = { group_empty = true },
+      filters = { git_ignored = true },
+      update_focused_file = { enable = true },
+    },
+  },
   {
     "sainnhe/everforest",
     lazy = false,
@@ -170,4 +191,4 @@ require("lazy").setup({
       vim.lsp.enable("metals")
     end,
   },
-})
+}, { lockfile = lockfile })
