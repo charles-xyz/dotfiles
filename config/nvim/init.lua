@@ -136,7 +136,7 @@ require("lazy").setup({
     "mason-org/mason-lspconfig.nvim",
     dependencies = { "mason-org/mason.nvim", "neovim/nvim-lspconfig" },
     opts = {
-      ensure_installed = { "basedpyright" },
+      ensure_installed = { "basedpyright", "prismals" },
     },
   },
   {
@@ -144,12 +144,12 @@ require("lazy").setup({
     lazy = false,
     build = ":TSUpdate",
     config = function()
-      require("nvim-treesitter").install({ "markdown", "markdown_inline", "scala" })
+      require("nvim-treesitter").install({ "markdown", "markdown_inline", "prisma", "scala" })
 
       -- build.sbt has its own filetype but is plain Scala
       vim.treesitter.language.register("scala", "sbt")
       vim.api.nvim_create_autocmd("FileType", {
-        pattern = { "scala", "sbt" },
+        pattern = { "prisma", "scala", "sbt" },
         -- pcall: the parser is compiled async on first launch
         callback = function() pcall(vim.treesitter.start) end,
       })
@@ -176,6 +176,11 @@ require("lazy").setup({
         },
       })
       vim.lsp.enable("basedpyright")
+
+      vim.lsp.config("prismals", {
+        capabilities = require("blink.cmp").get_lsp_capabilities(),
+      })
+      vim.lsp.enable("prismals")
 
       -- Metals comes from nix (home.nix), not mason
       vim.lsp.config("metals", {
