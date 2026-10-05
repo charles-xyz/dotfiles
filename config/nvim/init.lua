@@ -69,7 +69,15 @@ require("lazy").setup({
   {
     "sindrets/diffview.nvim",
     cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewRefresh" },
-    opts = { use_icons = false },
+    opts = {
+      use_icons = false,
+      file_panel = { win_config = { width = 60 } },
+    },
+    config = function(_, opts)
+      require("diffview").setup(opts)
+      -- the empty side of a new file's diff: blank instead of a wall of red dashes
+      vim.opt.fillchars:append({ diff = " " })
+    end,
   },
   {
     "lewis6991/gitsigns.nvim",
