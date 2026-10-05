@@ -5,6 +5,7 @@ vim.opt.background = "dark"
 
 vim.g.mapleader = " "
 vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
+vim.keymap.set("n", "<leader>e", "<cmd>Lexplore<CR>", { desc = "Toggle file explorer" })
 
 -- PYTHON / SCALA COMPILE HOTKEY
 --
