@@ -64,6 +64,22 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
+  -- Diff pane for the `atomic` skill: `nvim -c DiffviewOpen`.
+  -- Panel: s stages/unstages a file, X reverts it. Diff: ]c/[c hunks, <leader>hs stages one.
+  {
+    "sindrets/diffview.nvim",
+    cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewRefresh" },
+    opts = { use_icons = false },
+  },
+  {
+    "lewis6991/gitsigns.nvim",
+    event = "VeryLazy",
+    opts = {},
+    keys = {
+      { "<leader>hs", "<cmd>Gitsigns stage_hunk<cr>", desc = "Stage hunk" },
+      { "<leader>hr", "<cmd>Gitsigns reset_hunk<cr>", desc = "Reset hunk" },
+    },
+  },
   {
     "sainnhe/everforest",
     lazy = false,
