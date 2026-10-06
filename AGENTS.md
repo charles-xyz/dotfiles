@@ -5,3 +5,4 @@
 - WezTerm configuration: `config/wezterm/wezterm.lua`, linked to `~/.wezterm.lua` by `home.nix`.
 - Other managed settings and installed packages (including shell, git, gh, and Neovim): `home.nix`; flake entry point: `flake.nix`.
 - Apply changes from this repo with `home-manager switch --flake .#sante`, then verify the active configuration. Do not replace Home Manager symlinks with local copies.
+- For macOS screenshots in `/var/folders/.../TemporaryItems/NSIRD_screencaptureui_*/`, try reading the exact image path with the image-capable `read` tool, removing shell backslashes before spaces while preserving Unicode characters in the filename. Listing the parent directory can fail with `Operation not permitted` even when direct image reads work; do not infer the image is inaccessible from a failed `ls` or `find`.
