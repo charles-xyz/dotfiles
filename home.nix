@@ -98,6 +98,7 @@ in
 
 
   home.file.".wezterm.lua".source = ./config/wezterm/wezterm.lua;
+  home.file.".claude/CLAUDE.md".source = ./config/claude/CLAUDE.md;
 
   xdg.configFile."nvim" = {
     source = ./config/nvim;
