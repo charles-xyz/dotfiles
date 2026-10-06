@@ -155,7 +155,7 @@ require("lazy").setup({
     "mason-org/mason-lspconfig.nvim",
     dependencies = { "mason-org/mason.nvim", "neovim/nvim-lspconfig" },
     opts = {
-      ensure_installed = { "basedpyright", "prismals" },
+      ensure_installed = { "basedpyright", "prismals", "ts_ls", "postgres_lsp" },
     },
   },
   {
@@ -200,6 +200,19 @@ require("lazy").setup({
         capabilities = require("blink.cmp").get_lsp_capabilities(),
       })
       vim.lsp.enable("prismals")
+
+      vim.lsp.config("ts_ls", {
+        capabilities = require("blink.cmp").get_lsp_capabilities(),
+      })
+      vim.lsp.enable("ts_ls")
+
+      vim.lsp.config("postgres_lsp", {
+        capabilities = require("blink.cmp").get_lsp_capabilities(),
+        -- default requires a postgres-language-server.jsonc up the tree; fall back to .git / single-file mode
+        root_markers = { "postgres-language-server.jsonc", ".git" },
+        workspace_required = false,
+      })
+      vim.lsp.enable("postgres_lsp")
 
       -- Metals comes from nix (home.nix), not mason
       vim.lsp.config("metals", {
