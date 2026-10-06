@@ -15,6 +15,13 @@ vim.keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<CR>", { desc = "Fin
 vim.keymap.set("n", "<leader>fg", "<cmd>Telescope live_grep<CR>", { desc = "Search text" })
 vim.keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<CR>", { desc = "Find buffers" })
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "qf",
+  callback = function(event)
+    vim.keymap.set("n", "q", "<cmd>cclose<CR>", { buffer = event.buf, desc = "Close quickfix list" })
+  end,
+})
+
 -- PYTHON / SCALA COMPILE HOTKEY
 --
    vim.keymap.set("n", "<leader>r", function()
