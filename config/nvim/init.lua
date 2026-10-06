@@ -201,8 +201,35 @@ require("lazy").setup({
       })
       vim.lsp.enable("prismals")
 
+      local function hasLocalTypeScriptLsp(bufnr)
+        local root = vim.fs.root(bufnr, { "pnpm-lock.yaml", "package-lock.json", "yarn.lock", "bun.lockb", "bun.lock" })
+        if not root then return false end
+        local tsc = vim.fs.joinpath(root, "node_modules/.bin/tsc")
+        if vim.fn.executable(tsc) ~= 1 then return false end
+        local result = vim.system({ tsc, "--version" }, { text = true }):wait()
+        local version = vim.version.parse(result.stdout or "")
+        return result.code == 0 and version ~= nil and version.major >= 7
+      end
+
+      local tscRootDir = vim.lsp.config.tsc.root_dir
+      vim.lsp.config("tsc", {
+        capabilities = require("blink.cmp").get_lsp_capabilities(),
+        cmd = function(dispatchers, config)
+          local tsc = vim.fs.joinpath(config.root_dir, "node_modules/.bin/tsc")
+          return vim.lsp.rpc.start({ tsc, "--lsp", "--stdio" }, dispatchers)
+        end,
+        root_dir = function(bufnr, on_dir)
+          if hasLocalTypeScriptLsp(bufnr) then tscRootDir(bufnr, on_dir) end
+        end,
+      })
+      vim.lsp.enable("tsc")
+
+      local tsLsRootDir = vim.lsp.config.ts_ls.root_dir
       vim.lsp.config("ts_ls", {
         capabilities = require("blink.cmp").get_lsp_capabilities(),
+        root_dir = function(bufnr, on_dir)
+          if not hasLocalTypeScriptLsp(bufnr) then tsLsRootDir(bufnr, on_dir) end
+        end,
       })
       vim.lsp.enable("ts_ls")
 
