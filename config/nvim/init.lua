@@ -83,7 +83,7 @@ require("lazy").setup({
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     cmd = "Telescope",
-    opts = {},
+    opts = { defaults = { path_display = { "filename_first" } } },
   },
   {
     "nvim-lualine/lualine.nvim",
