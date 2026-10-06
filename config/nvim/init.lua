@@ -163,12 +163,12 @@ require("lazy").setup({
     lazy = false,
     build = ":TSUpdate",
     config = function()
-      require("nvim-treesitter").install({ "markdown", "markdown_inline", "prisma", "scala" })
+      require("nvim-treesitter").install({ "markdown", "markdown_inline", "prisma", "scala", "tsx", "typescript" })
 
       -- build.sbt has its own filetype but is plain Scala
       vim.treesitter.language.register("scala", "sbt")
       vim.api.nvim_create_autocmd("FileType", {
-        pattern = { "prisma", "scala", "sbt" },
+        pattern = { "prisma", "scala", "sbt", "typescript", "typescriptreact" },
         -- pcall: the parser is compiled async on first launch
         callback = function() pcall(vim.treesitter.start) end,
       })
