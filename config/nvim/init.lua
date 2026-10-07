@@ -170,12 +170,12 @@ require("lazy").setup({
     lazy = false,
     build = ":TSUpdate",
     config = function()
-      require("nvim-treesitter").install({ "markdown", "markdown_inline", "prisma", "scala", "sql", "tsx", "typescript" })
+      require("nvim-treesitter").install({ "markdown", "markdown_inline", "prisma", "python", "scala", "sql", "tsx", "typescript" })
 
       -- build.sbt has its own filetype but is plain Scala
       vim.treesitter.language.register("scala", "sbt")
       vim.api.nvim_create_autocmd("FileType", {
-        pattern = { "prisma", "scala", "sbt", "sql", "typescript", "typescriptreact" },
+        pattern = { "prisma", "python", "scala", "sbt", "sql", "typescript", "typescriptreact" },
         -- pcall: the parser is compiled async on first launch
         callback = function() pcall(vim.treesitter.start) end,
       })
@@ -195,6 +195,8 @@ require("lazy").setup({
         settings = {
           basedpyright = {
             analysis = {
+              -- default "recommended" flags every partially-Unknown type, which is most of polars
+              typeCheckingMode = "standard",
               autoSearchPaths = true,
               useLibraryCodeForTypes = true,
             },
